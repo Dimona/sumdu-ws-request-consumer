@@ -1,0 +1,1 @@
+export const WEATHER_DATE_DEFAULT_FORMAT = 'DD.MM.YYYY';

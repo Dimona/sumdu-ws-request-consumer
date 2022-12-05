@@ -26,20 +26,15 @@ provider:
           Action:
             - dynamodb:DescribeTable
             - dynamodb:Query
-            - dynamodb:Scan
             - dynamodb:UpdateItem
-        - Effect: Allow
-          Resource:
-            - arn:aws:sqs:${aws:region}:${aws:accountId}:${env:WS_WEATHER_REQUESTS_QUEUE_URL}
-          Action:
-            - sqs:SendMessage
+            - dynamodb:GetItem
       tags:
         app: sumdu-workshop
         env: ${self:provider.stage}
   environment:
     ENVIRONMENT: ${self:provider.stage}
     WS_WEATHER_REQUESTS_DYNAMODB_TABLE: ${env:WS_WEATHER_REQUESTS_DYNAMODB_TABLE}
-    WS_WEATHER_REQUESTS_QUEUE_URL: ${env:WS_WEATHER_REQUESTS_QUEUE_URL}
+    WS_WEATHER_REQUESTS_QUEUE: ${env:WS_WEATHER_REQUESTS_QUEUE}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
 plugins:
@@ -47,8 +42,10 @@ plugins:
   - serverless-webpack
 
 functions:
-  sqs-publisher:
+  sqs-consumer:
     handler: src/index.handler
+    events:
+      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:${WS_WEATHER_REQUESTS_QUEUE}
 
 custom:
   webpack:

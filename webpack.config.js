@@ -3,6 +3,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
 const slsWebpack = require('serverless-webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const entries = slsWebpack.lib.entries;
 const isLocal = Object.keys(entries).length === 0;
@@ -65,6 +66,14 @@ module.exports = {
         }
         return false;
       },
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'src/emails/templates/'),
+          to: path.resolve(__dirname, 'dist/src/emails/templates/'),
+        },
+      ],
     }),
   ],
   output: {

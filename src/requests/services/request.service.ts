@@ -29,7 +29,7 @@ export class RequestService {
     partitionKey: Partial<EntityAttributes<WeatherRequestEntity>>;
     queryOptions: EntityManagerCountOptions<WeatherRequestEntity, Partial<EntityAttributes<WeatherRequestEntity>>>;
   }): Promise<number> {
-    return this.awsDynamodbService.getEntityManager(REQUESTS).count(WeatherRequestEntity, partitionKey, queryOptions);
+    return this.entityManager.count(WeatherRequestEntity, partitionKey, queryOptions);
   }
 
   async find({
@@ -39,7 +39,7 @@ export class RequestService {
     partitionKey: Partial<EntityAttributes<WeatherRequestEntity>>;
     queryOptions: EntityManagerFindOptions<WeatherRequestEntity, any>;
   }): Promise<FindResults<WeatherRequestEntity>> {
-    return this.awsDynamodbService.getEntityManager(REQUESTS).find(WeatherRequestEntity, partitionKey, queryOptions);
+    return this.entityManager.find(WeatherRequestEntity, partitionKey, queryOptions);
   }
 
   async update({
@@ -51,7 +51,7 @@ export class RequestService {
     body: UpdateBody<Omit<WeatherRequestEntity, 'createdAt'>, Omit<WeatherRequestEntity, 'createdAt'>>;
     queryOptions?: EntityManagerUpdateOptions<WeatherRequestEntity>;
   }): Promise<any> {
-    return this.awsDynamodbService.getEntityManager(REQUESTS).update(
+    return this.entityManager.update(
       WeatherRequestEntity,
       primaryKeyAttributes,
       // @ts-ignore

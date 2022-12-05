@@ -10,6 +10,7 @@ import {
 import { default as crypto } from 'crypto';
 import { AwsDynamodbEntity } from '@workshop/lib-nest-aws/dist/services/dynamodb';
 import { statusNextTimeIndex } from '@requests/constants/request.constants';
+import { WeatherInfo } from '@weather/types/weather.types';
 
 @Entity({
   name: 'WeatherRequest',
@@ -61,6 +62,9 @@ export class WeatherRequestEntity extends AwsDynamodbEntity<TRequest<TWeatherPay
 
   @Attribute()
   error?: any;
+
+  @Attribute()
+  data?: WeatherInfo;
 
   static buildRequestId(email: string, { latitude, longitude }: { latitude: number; longitude: number }): string {
     return crypto

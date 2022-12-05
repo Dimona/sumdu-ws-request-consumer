@@ -1,73 +1,107 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { WeatherRequestEntity } from '@requests/entities/weather.request.entity';
+import { WeatherService } from '@weather/services/weather.service';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { WEATHER_DATE_DEFAULT_FORMAT } from '@app/constants/app.constants';
 import { RequestService } from '@requests/services/request.service';
 import { RequestStatus } from '@requests/enums/request.enums';
-import { LIMIT, statusUpdatedAtIndex } from '@requests/constants/request.constants';
-import { AwsSqsModuleOptions, AwsSqsService } from '@workshop/lib-nest-aws/dist/services/sqs';
-import { SendMessageCommand } from '@aws-sdk/client-sqs';
+import { AwsSesModuleOptions, AwsSesService } from '@workshop/lib-nest-aws/dist/services/ses';
+import { SendEmailCommand } from '@aws-sdk/client-ses';
+import { EmailService } from '@emails/services/email.service';
+import { WeatherRequestPlaceholders } from '@emails/templates/weather.request.placeholders';
 import { ConfigService } from '@nestjs/config';
-import { AWS_SQS_CONFIG } from '@app/constants/aws.sqs.constatns';
-import { AwsSqsQueue } from '@app/enums/aws.sqs.enums';
+import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
+import path from 'path';
+
+dayjs.extend(customParseFormat);
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  private readonly queues: AwsSqsModuleOptions['queues'];
-
   constructor(
     private readonly configService: ConfigService,
+    private readonly weatherService: WeatherService,
     private readonly requestService: RequestService,
-    private readonly awsSqsService: AwsSqsService,
-  ) {
-    this.queues = this.configService.get<AwsSqsModuleOptions>(AWS_SQS_CONFIG).queues;
-  }
+    private readonly awsSesService: AwsSesService,
+    private readonly emailService: EmailService,
+  ) {}
 
-  async execute(): Promise<void> {
+  async execute(request: WeatherRequestEntity): Promise<void> {
+    const config = this.configService.get<AwsSesModuleOptions>(AWS_SES_CONFIG);
     try {
-      const total = await this.requestService.count({
-        partitionKey: { status: RequestStatus.DONE },
-        queryOptions: { queryIndex: statusUpdatedAtIndex },
+      // Retrieve location weather info
+      const weather = await this.weatherService.retrieveForDate(
+        request.payload,
+        dayjs(request.targetDate, WEATHER_DATE_DEFAULT_FORMAT),
+      );
+
+      // Update dynamodb record
+      await this.requestService.update({
+        primaryKeyAttributes: { id: request.id, targetDate: request.targetDate },
+        body: { status: RequestStatus.DONE, data: weather, nextTime: request.nextTime + 60 * 60 * 1000 },
       });
 
-      const limit = LIMIT;
-      let offset = 0;
-      let cursor: unknown;
-      while (offset < total) {
-        const requests = await this.requestService.find({
-          partitionKey: { status: RequestStatus.DONE },
-          queryOptions: { queryIndex: statusUpdatedAtIndex, limit, cursor },
-        });
+      console.log(weather);
+      console.log(
+        this.emailService.compile<WeatherRequestPlaceholders>(
+          path.resolve(__dirname, 'src/emails/templates/weather.request.email.hbs'),
+          {
+            temperature: String(weather.temperature),
+            temperatureDiff: '+0',
+            date: request.targetDate,
+            name: 'User',
+            latitude: String(request.payload.latitude),
+            longitude: String(request.payload.longitude),
+            weatherIcon: weather.icon,
+            windSpeed: String(weather.windSpeed),
+            windSpeedDiff: '+0',
+          },
+        ),
+      );
 
-        await Promise.all(
-          requests.items.map(async request => {
-            try {
-              await this.awsSqsService.send(
-                new SendMessageCommand({
-                  QueueUrl: this.queues[AwsSqsQueue.WEATHER_REQUESTS],
-                  MessageBody: JSON.stringify(request),
-                }),
-              );
-              await this.requestService.update({
-                primaryKeyAttributes: { id: request.id },
-                body: { status: RequestStatus.QUEUED },
-              });
-            } catch (err) {
-              this.logger.error(err);
-              await this.requestService.update({
-                primaryKeyAttributes: { id: request.id },
-                body: { status: RequestStatus.FAILED, updatedAt: new Date().valueOf() },
-              });
-            }
-          }),
-        );
-        ({ cursor } = requests);
-
-        offset += limit;
-      }
+      // Send email
+      await this.awsSesService.sendEmail(
+        new SendEmailCommand({
+          Message: {
+            Body: {
+              Html: {
+                Data: this.emailService.compile<WeatherRequestPlaceholders>(
+                  path.resolve(__dirname, 'src/emails/templates/weather.request.email.hbs'),
+                  {
+                    temperature: String(weather.temperature),
+                    temperatureDiff: '+0',
+                    date: request.targetDate,
+                    name: 'User',
+                    latitude: String(request.payload.latitude),
+                    longitude: String(request.payload.longitude),
+                    weatherIcon: weather.icon,
+                    windSpeed: String(weather.windSpeed),
+                    windSpeedDiff: '+0',
+                  },
+                ),
+              },
+            },
+            Subject: {
+              Data: 'Weather Notification',
+            },
+          },
+          Source: config.email.source,
+          Destination: {
+            ToAddresses: [request.email],
+          },
+        }),
+      );
 
       this.logger.log(`Successfully finished at ${new Date().toISOString()}`);
     } catch (err) {
       this.logger.error(err);
+
+      await this.requestService.update({
+        primaryKeyAttributes: { id: request.id, targetDate: request.targetDate },
+        body: { status: RequestStatus.FAILED, error: err },
+      });
 
       throw err;
     }

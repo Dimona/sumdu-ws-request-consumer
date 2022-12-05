@@ -2,21 +2,25 @@ import { Module } from '@nestjs/common';
 import { RequestModule } from '@requests/request.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppService } from '@app/services/app.service';
-import { AwsSqsModule, AwsSqsModuleOptions } from '@workshop/lib-nest-aws/dist/services/sqs';
-import { AWS_SQS_CONFIG } from '@app/constants/aws.sqs.constatns';
-import { awsSqsConfig } from '@app/config/aws.sqs.config';
+import { WeatherModule } from '@weather/weather.module';
+import { AwsSesModule, AwsSesModuleOptions } from '@workshop/lib-nest-aws/dist/services/ses';
+import { awsSesConfig } from '@app/config/aws.ses.config';
+import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
+import { EmailModule } from '@emails/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    RequestModule,
-    ConfigModule.forFeature(awsSqsConfig),
-    AwsSqsModule.registerAsync({
+    ConfigModule.forFeature(awsSesConfig),
+    AwsSesModule.registerAsync({
       useFactory(configService: ConfigService) {
-        return configService.get<AwsSqsModuleOptions>(AWS_SQS_CONFIG);
+        return configService.get<AwsSesModuleOptions>(AWS_SES_CONFIG);
       },
       inject: [ConfigService],
     }),
+    RequestModule,
+    WeatherModule,
+    EmailModule,
   ],
   providers: [AppService],
 })
