@@ -1,19 +1,35 @@
-<html>
+<html lang='en'>
   <head>
     <title>Weather forecast</title>
+    <style>
+      .value { font-weight: bold; } .up { color: green; } .dow { color: red; }
+    </style>
   </head>
   <body>
     <div>
-      Dear {{name}} here the weather forecast for date: {{date}} for Location({{latitude}},{{longitude}}).
+      Dear
+      {{name}}
+      here the weather forecast for date:
+      {{date}}
+      for Location({{latitude}},{{longitude}}).
     </div>
     <div>
       <img src='{{weatherIcon}}' alt='weatherIcon' />
     </div>
     <div>
-      Temperature {{temperature}} &#8451; ({{temperatureDiff}} &#8451;)
+      <span class='label'>Temperature:&nbsp;</span><span class='value'>{{temperature.value}} &#8451;</span>&nbsp;(<span
+      class='{{temperature.class}}'
+    >{{temperature.diff}} &#8451;</span>)
     </div>
     <div>
-      Wind speed {{windSpeed}} m/s ({{windSpeedDiff}} m/s)
+      <span class='label'>Wind speed:&nbsp;</span><span class='value'>{{windSpeed.value}} m/s</span>&nbsp;(<span
+      class='{{windSpeed.class}}'
+    >{{windSpeed.diff}} m/s</span>)
+    </div>
+    <div>
+      <span class='label'>Wind direction:&nbsp;</span><span class='value'>{{windDirection.value}}</span>&nbsp;(<span
+        class='{{windDirection.class}}'
+      >{{windDirection.diff}}</span>)
     </div>
   </body>
 </html>

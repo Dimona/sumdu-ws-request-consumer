@@ -1,11 +1,17 @@
+import { WeatherFieldData } from '@weather/types/weather.types';
+
 export type WeatherRequestTypes = {
   name: string;
   date: string;
   latitude: string;
   longitude: string;
   weatherIcon: string;
-  temperature: string;
-  temperatureDiff?: string;
-  windSpeed: string;
-  windSpeedDiff?: string;
+  temperature: WeatherFieldData;
+  windSpeed: WeatherFieldData;
+  windDirection: WeatherFieldData;
 };
+
+export enum DiffClass {
+  up = 'up',
+  down = 'down',
+}

@@ -5,6 +5,7 @@ import { AwsSesTemplateService } from '@workshop/lib-nest-aws/dist/services/ses'
 import { WEATHER_REQUEST_TEMPLATE } from '@emails/templates/weather-request/weather-request.constants';
 import { EmailService } from '@emails/services/email.service';
 import path from 'path';
+import fs from 'fs';
 
 @Injectable()
 export class MigrateSesTemplateCommand {
@@ -36,12 +37,18 @@ export class MigrateSesTemplateCommand {
         await this.awsSesTemplateService.delete({
           TemplateName: WEATHER_REQUEST_TEMPLATE,
         });
+        const source = fs.readFileSync(
+          path.resolve(__dirname, 'src/emails/templates/', name, `${name}.template.hbs`),
+          'utf8',
+        );
+
+        if (!source) {
+          throw new Error(`File not found: ${path}`);
+        }
         await this.awsSesTemplateService.create({
           Template: {
             TemplateName: WEATHER_REQUEST_TEMPLATE,
-            HtmlPart: this.emailService
-              .compile(path.resolve(__dirname, 'src/emails/templates/', name, `${name}.template.hbs`))
-              .toString(),
+            HtmlPart: source,
             SubjectPart: 'Weather Notification',
           },
         });

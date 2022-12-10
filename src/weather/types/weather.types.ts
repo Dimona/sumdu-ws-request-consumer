@@ -12,3 +12,9 @@ export type WeatherInfo = {
   sunset: string;
   icon: string;
 };
+
+export type WeatherFieldData = {
+  value: string;
+  diff: string;
+  class: string;
+};
