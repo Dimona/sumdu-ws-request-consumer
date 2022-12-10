@@ -14,7 +14,7 @@ const bootstrap = async () => {
     nextTime: 1670070414,
     email: 'd.mona22@gmail.com',
     id: 'b47d0cbd2740bf9fd6f1',
-    targetDate: '05.12.2022',
+    targetDate: '15.12.2022',
   };
 
   await app.get(AppService).execute(payload as WeatherRequestEntity);

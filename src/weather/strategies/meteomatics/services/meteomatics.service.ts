@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeteomaticsConfig } from '@weather/strategies/meteomatics/types/meteomatics.types';
 import { IMAGE_URL, METEOMATICS_CONFIG } from '@weather/strategies/meteomatics/constants/meteomatics.constants';
-import { IWeatherService } from '@weather/interfaces/weather.interfaces';
+import { IWeatherStrategy } from '@weather/interfaces/weather.interfaces';
 import { Coordinates, WeatherInfo } from '@weather/types/weather.types';
 import dayjs from 'dayjs';
 import { HttpService } from '@nestjs/axios';
@@ -15,7 +15,7 @@ import { catchError, firstValueFrom, map } from 'rxjs';
 import { AxiosError } from 'axios';
 
 @Injectable()
-export class MeteomaticsService implements IWeatherService {
+export class MeteomaticsService implements IWeatherStrategy {
   private readonly logger = new Logger(MeteomaticsService.name);
 
   private readonly config: MeteomaticsConfig;

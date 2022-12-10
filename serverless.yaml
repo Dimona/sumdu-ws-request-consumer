@@ -10,7 +10,7 @@ provider:
   runtime: nodejs16.x
   region: eu-central-1
   architecture: arm64
-  timeout: 60
+  timeout: 30
   memorySize: 1024
   deploymentMethod: direct
   versionFunctions: false
@@ -35,6 +35,9 @@ provider:
     ENVIRONMENT: ${self:provider.stage}
     WS_WEATHER_REQUESTS_DYNAMODB_TABLE: ${env:WS_WEATHER_REQUESTS_DYNAMODB_TABLE}
     WS_WEATHER_REQUESTS_QUEUE: ${env:WS_WEATHER_REQUESTS_QUEUE}
+    METEOMATICS_USER: ${env:METEOMATICS_USER}
+    METEOMATICS_PASSWORD: ${env:METEOMATICS_PASSWORD}
+    SES_SOURCE_EMAIL: ${env:SES_SOURCE_EMAIL}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
 plugins:
@@ -45,7 +48,7 @@ functions:
   sqs-consumer:
     handler: src/index.handler
     events:
-      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:${WS_WEATHER_REQUESTS_QUEUE}
+      - sqs: arn:aws:sqs:${aws:region}:${aws:accountId}:${env:WS_WEATHER_REQUESTS_QUEUE}
 
 custom:
   webpack:

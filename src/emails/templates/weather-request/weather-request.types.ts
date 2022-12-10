@@ -1,4 +1,4 @@
-export type WeatherRequestPlaceholders = {
+export type WeatherRequestTypes = {
   name: string;
   date: string;
   latitude: string;

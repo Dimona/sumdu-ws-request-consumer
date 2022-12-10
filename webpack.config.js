@@ -9,6 +9,7 @@ const entries = slsWebpack.lib.entries;
 const isLocal = Object.keys(entries).length === 0;
 const localEntry = {
   main: './src/main.ts',
+  cli: path.resolve(__dirname, 'src/cli.ts'),
 };
 
 module.exports = {
@@ -70,8 +71,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src/emails/templates/'),
-          to: path.resolve(__dirname, 'dist/src/emails/templates/'),
+          from: path.resolve(__dirname, 'src/emails/templates/weather-request/weather-request.template.hbs'),
+          to: path.resolve(__dirname, 'dist/src/emails/templates/weather-request/weather-request.template.hbs'),
         },
       ],
     }),

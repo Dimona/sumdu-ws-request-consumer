@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IWeatherService } from '@weather/interfaces/weather.interfaces';
+import { IWeatherStrategy } from '@weather/interfaces/weather.interfaces';
 import { Coordinates, WeatherInfo } from '@weather/types/weather.types';
 import dayjs from 'dayjs';
-import { WEATHER_PROVIDER } from '@weather/constants/weather.constants';
+import { WEATHER_STRATEGY } from '@weather/constants/weather.constants';
 
 @Injectable()
-export class WeatherService implements IWeatherService {
-  constructor(@Inject(WEATHER_PROVIDER) private readonly weatherProvider: IWeatherService) {}
+export class WeatherService implements IWeatherStrategy {
+  constructor(@Inject(WEATHER_STRATEGY) private readonly weatherStrategy: IWeatherStrategy) {}
 
   retrieveForDate(coordinates: Coordinates, date: dayjs.Dayjs): Promise<WeatherInfo> {
-    return this.weatherProvider.retrieveForDate(coordinates, date);
+    return this.weatherStrategy.retrieveForDate(coordinates, date);
   }
 }
