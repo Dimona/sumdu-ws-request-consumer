@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { RequestModule } from '@requests/request.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppService } from '@app/services/app.service';
 import { WeatherModule } from '@weather/weather.module';
@@ -7,6 +6,7 @@ import { AwsSesModule, AwsSesModuleOptions } from '@workshop/lib-nest-aws/dist/s
 import { awsSesConfig } from '@app/config/aws.ses.config';
 import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
 import { EmailModule } from '@emails/email.module';
+import { WeatherRequestModule } from '@workshop/lib-nest-weather-request';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { EmailModule } from '@emails/email.module';
       },
       inject: [ConfigService],
     }),
-    RequestModule,
+    WeatherRequestModule,
     WeatherModule,
     EmailModule,
   ],

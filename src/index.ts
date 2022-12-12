@@ -11,7 +11,6 @@ export const handler: Handler = async (event: SQSEvent) => {
   const service = app.get(AppService);
 
   for await (const record of event.Records) {
-    console.log(record.body);
     await service.execute(JSON.parse(record.body));
   }
 };

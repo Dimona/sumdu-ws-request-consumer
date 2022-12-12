@@ -1,8 +1,8 @@
+import dayjs from 'dayjs';
+import { WeatherRequestEntity } from '@workshop/lib-nest-weather-request';
 import { AppModule } from '@app/app.module';
 import { NestFactory } from '@nestjs/core';
 import { AppService } from '@app/services/app.service';
-import { WeatherRequestEntity } from '@requests/entities/weather.request.entity';
-import dayjs from 'dayjs';
 
 const bootstrap = async () => {
   const app = await NestFactory.createApplicationContext(AppModule);

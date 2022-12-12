@@ -29,6 +29,7 @@
     "@aws-sdk/client-dynamodb": "^3.223.0",
     "@aws-sdk/lib-dynamodb": "^3.223.0",
     "@workshop/lib-nest-aws": "0.3.7",
+    "@workshop/lib-nest-weather-request": "0.1.1",
     "@nestjs/axios": "^1.0.0",
     "@nestjs/common": "^9.2.0",
     "@nestjs/config": "^2.2.0",

@@ -1,18 +1,15 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Injectable, Logger } from '@nestjs/common';
-import { WeatherRequestEntity } from '@requests/entities/weather.request.entity';
 import { WeatherService } from '@weather/services/weather.service';
 import { HOUR_IN_MILLISECONDS, WEATHER_DATE_DEFAULT_FORMAT } from '@app/constants/app.constants';
-import { RequestService } from '@requests/services/request.service';
-import { RequestStatus } from '@requests/enums/request.enums';
 import { AwsSesEmailService, AwsSesModuleOptions } from '@workshop/lib-nest-aws/dist/services/ses';
-import { EmailService } from '@emails/services/email.service';
 import { ConfigService } from '@nestjs/config';
 import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
 import { WEATHER_REQUEST_TEMPLATE } from '@emails/templates/weather-request/weather-request.constants';
 import { WeatherUtils } from '@weather/utils/weather.utils';
 import { WeatherRequestTypes } from '@emails/templates/weather-request/weather-request.types';
+import { WeatherRequestEntity, WeatherRequestService, WeatherRequestStatus } from '@workshop/lib-nest-weather-request';
 
 dayjs.extend(customParseFormat);
 
@@ -23,7 +20,7 @@ export class AppService {
   constructor(
     private readonly configService: ConfigService,
     private readonly weatherService: WeatherService,
-    private readonly requestService: RequestService,
+    private readonly weatherRequestService: WeatherRequestService,
     private readonly awsSesEmailService: AwsSesEmailService,
   ) {}
 
@@ -56,18 +53,18 @@ export class AppService {
       });
 
       // Update dynamodb record
-      await this.requestService.update({
+      await this.weatherRequestService.update({
         primaryKeyAttributes: { id: request.id, targetDate: request.targetDate },
-        body: { status: RequestStatus.DONE, data: weather, nextTime: request.nextTime + HOUR_IN_MILLISECONDS },
+        body: { status: WeatherRequestStatus.DONE, data: weather, nextTime: request.nextTime + HOUR_IN_MILLISECONDS },
       });
 
       this.logger.log(`Successfully finished at ${new Date().toISOString()}`);
     } catch (err) {
       this.logger.error(err);
 
-      await this.requestService.update({
+      await this.weatherRequestService.update({
         primaryKeyAttributes: { id: request.id, targetDate: request.targetDate },
-        body: { status: RequestStatus.FAILED, error: err },
+        body: { status: WeatherRequestStatus.FAILED, error: err },
       });
 
       throw err;

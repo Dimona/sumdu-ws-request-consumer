@@ -1,7 +1,7 @@
+import dayjs from 'dayjs';
 import { Inject, Injectable } from '@nestjs/common';
 import { IWeatherStrategy } from '@weather/interfaces/weather.interfaces';
 import { Coordinates, WeatherInfo } from '@weather/types/weather.types';
-import dayjs from 'dayjs';
 import { WEATHER_STRATEGY } from '@weather/constants/weather.constants';
 
 @Injectable()
