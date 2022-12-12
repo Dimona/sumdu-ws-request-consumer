@@ -2,14 +2,21 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Injectable, Logger } from '@nestjs/common';
 import { WeatherService } from '@weather/services/weather.service';
-import { HOUR_IN_MILLISECONDS, WEATHER_DATE_DEFAULT_FORMAT } from '@app/constants/app.constants';
+import { HOUR_IN_MILLISECONDS } from '@app/constants/app.constants';
 import { AwsSesEmailService, AwsSesModuleOptions } from '@workshop/lib-nest-aws/dist/services/ses';
 import { ConfigService } from '@nestjs/config';
 import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
-import { WEATHER_REQUEST_TEMPLATE } from '@emails/templates/weather-request/weather-request.constants';
 import { WeatherUtils } from '@weather/utils/weather.utils';
 import { WeatherRequestTypes } from '@emails/templates/weather-request/weather-request.types';
-import { WeatherRequestEntity, WeatherRequestService, WeatherRequestStatus } from '@workshop/lib-nest-weather-request';
+import {
+  WEATHER_DATE_DEFAULT_FORMAT,
+  WeatherRequestEntity,
+  WeatherRequestService,
+  WeatherRequestStatus,
+} from '@workshop/lib-nest-weather-request';
+import { EmailConfig } from '@emails/types/email.types';
+import { EMAIL_CONFIG } from '@emails/constants/email.constants';
+import { EmailTemplate } from '@emails/enums/email.enums';
 
 dayjs.extend(customParseFormat);
 
@@ -17,12 +24,16 @@ dayjs.extend(customParseFormat);
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
+  private readonly config: EmailConfig;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly weatherService: WeatherService,
     private readonly weatherRequestService: WeatherRequestService,
     private readonly awsSesEmailService: AwsSesEmailService,
-  ) {}
+  ) {
+    this.config = this.configService.get(EMAIL_CONFIG);
+  }
 
   async execute(request: WeatherRequestEntity): Promise<void> {
     const config = this.configService.get<AwsSesModuleOptions>(AWS_SES_CONFIG);
@@ -35,7 +46,7 @@ export class AppService {
 
       // Send email
       await this.awsSesEmailService.sendTemplatedEmail({
-        Template: WEATHER_REQUEST_TEMPLATE,
+        Template: this.config.templates[EmailTemplate.WEATHER_REQUEST],
         TemplateData: JSON.stringify(<WeatherRequestTypes>{
           name: 'User',
           date: request.targetDate,

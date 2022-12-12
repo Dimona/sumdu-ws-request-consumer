@@ -28,6 +28,14 @@ provider:
             - dynamodb:Query
             - dynamodb:UpdateItem
             - dynamodb:GetItem
+        - Effect: Allow
+          Resource:
+            - arn:aws:ses:${aws:region}:${aws:accountId}:identity/*
+            - arn:aws:ses:${aws:region}:${aws:accountId}:template/weather-request-template
+          Action:
+            - ses:SendEmail
+            - ses:SendTemplatedEmail
+            - ses:SendRawEmail
       tags:
         app: sumdu-workshop
         env: ${self:provider.stage}
@@ -38,6 +46,7 @@ provider:
     METEOMATICS_USER: ${env:METEOMATICS_USER}
     METEOMATICS_PASSWORD: ${env:METEOMATICS_PASSWORD}
     SES_SOURCE_EMAIL: ${env:SES_SOURCE_EMAIL}
+    WEATHER_REQUEST_TEMPLATE: ${env:WEATHER_REQUEST_TEMPLATE}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
 plugins:

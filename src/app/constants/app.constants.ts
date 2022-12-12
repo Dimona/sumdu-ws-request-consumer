@@ -1,3 +1,1 @@
-export const WEATHER_DATE_DEFAULT_FORMAT = 'DD.MM.YYYY';
-
 export const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;

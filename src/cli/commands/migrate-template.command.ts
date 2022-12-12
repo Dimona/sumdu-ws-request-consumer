@@ -2,16 +2,20 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Command, Positional } from 'nestjs-command';
 import { CliUtils } from '../utils/cli.utils';
 import { AwsSesTemplateService } from '@workshop/lib-nest-aws/dist/services/ses';
-import { WEATHER_REQUEST_TEMPLATE } from '@emails/templates/weather-request/weather-request.constants';
 import { EmailService } from '@emails/services/email.service';
 import path from 'path';
 import fs from 'fs';
+import { ConfigService } from '@nestjs/config';
+import { EMAIL_CONFIG } from '@emails/constants/email.constants';
+import { EmailConfig } from '@emails/types/email.types';
+import { EmailTemplate } from '@emails/enums/email.enums';
 
 @Injectable()
 export class MigrateSesTemplateCommand {
   private readonly logger = new Logger(MigrateSesTemplateCommand.name);
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly awsSesTemplateService: AwsSesTemplateService,
     private readonly emailService: EmailService,
   ) {}
@@ -29,13 +33,14 @@ export class MigrateSesTemplateCommand {
     name: string,
   ) {
     this.logger.verbose('----------------------Start-------------------');
+    const template = this.configService.get<EmailConfig>(EMAIL_CONFIG).templates[EmailTemplate.WEATHER_REQUEST];
     this.emailService
       .compile(path.resolve(__dirname, 'src/emails/templates/', name, `${name}.template.hbs`))
       .toString();
     const time = await CliUtils.getScripTime(async () => {
       try {
         await this.awsSesTemplateService.delete({
-          TemplateName: WEATHER_REQUEST_TEMPLATE,
+          TemplateName: template,
         });
         const source = fs.readFileSync(
           path.resolve(__dirname, 'src/emails/templates/', name, `${name}.template.hbs`),
@@ -47,7 +52,7 @@ export class MigrateSesTemplateCommand {
         }
         await this.awsSesTemplateService.create({
           Template: {
-            TemplateName: WEATHER_REQUEST_TEMPLATE,
+            TemplateName: template,
             HtmlPart: source,
             SubjectPart: 'Weather Notification',
           },
