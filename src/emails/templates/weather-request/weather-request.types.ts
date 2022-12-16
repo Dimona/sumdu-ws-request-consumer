@@ -1,6 +1,6 @@
 import { WeatherFieldData } from '@weather/types/weather.types';
 
-export type WeatherRequestTypes = {
+export type WeatherRequest = {
   name: string;
   date: string;
   latitude: string;

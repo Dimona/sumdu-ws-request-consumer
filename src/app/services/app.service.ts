@@ -7,7 +7,7 @@ import { AwsSesEmailService, AwsSesModuleOptions } from '@workshop/lib-nest-aws/
 import { ConfigService } from '@nestjs/config';
 import { AWS_SES_CONFIG } from '@app/constants/aws.ses.constatns';
 import { WeatherUtils } from '@weather/utils/weather.utils';
-import { WeatherRequestTypes } from '@emails/templates/weather-request/weather-request.types';
+import { WeatherRequest } from '@emails/templates/weather-request/weather-request.types';
 import {
   WEATHER_DATE_DEFAULT_FORMAT,
   WeatherRequestEntity,
@@ -47,7 +47,7 @@ export class AppService {
       // Send email
       await this.awsSesEmailService.sendTemplatedEmail({
         Template: this.config.templates[EmailTemplate.WEATHER_REQUEST],
-        TemplateData: JSON.stringify(<WeatherRequestTypes>{
+        TemplateData: JSON.stringify(<WeatherRequest>{
           name: 'User',
           date: request.targetDate,
           latitude: String(request.payload.latitude),
